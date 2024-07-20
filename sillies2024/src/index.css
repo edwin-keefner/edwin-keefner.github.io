@@ -1,13 +1,44 @@
 body {
+  background-color: #121212; /* Dark theme background */
+  color: #e0e0e0; /* Light text color for dark theme */
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-family: Arial, sans-serif;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+.navbar {
+  background-color: #1e1e1e; /* Slightly darker navbar */
+  color: #e0e0e0;
+  padding: 10px;
+  border-bottom: 1px solid #fff; /* White line below navbar */
 }
+
+.navbar a {
+  color: #e0e0e0;
+  text-decoration: none;
+  margin-right: 15px;
+}
+
+.navbar button {
+  background-color: #333;
+  border: none;
+  color: #e0e0e0;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.navbar button:hover {
+  background-color: #555;
+}
+
+.page-number {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1e1e1e; /* Background color to match dark theme */
+  color: #e0e0e0; /* Light text color for readability */
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 18px;
+}
+

@@ -1,25 +1,27 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import HomePage from './components/HomePage';
+import HostPage from './components/HostPage';
+import ViewerPage from './components/ViewerPage';
+import NavBar from './components/NavBar';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from './firebase';
+import './index.css';
 
-function App() {
+const App = () => {
+  const [user] = useAuthState(auth);
+  const isHost = user && user.email === 'hybyrn@gmail.com';
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <NavBar user={user} isHost={isHost} />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/host" element={<HostPage isHost={isHost} />} />
+        <Route path="/viewer" element={<ViewerPage />} />
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;
