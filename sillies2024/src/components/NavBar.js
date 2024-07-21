@@ -27,6 +27,7 @@ const NavBar = ({ user, isHost }) => {
         <Link to="/">Home</Link>
         {user && <Link to="/viewer">Presentation</Link>}
         {user && isHost && <Link to="/host">Host Page</Link>}
+        <Link to="/upload">Upload Video</Link> {/* Add this line */}
       </div>
       <div>
         {user ? (
