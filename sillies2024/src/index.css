@@ -42,17 +42,29 @@ body {
   font-size: 18px;
 }
 
-/* src/index.css */
+/* Styling for video grid on HostPage */
 .video-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
+  margin: 16px 0;
 }
 
 .video-grid-item {
   border: 1px solid #ddd;
-  padding: 8px;
-  border-radius: 4px;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: #1e1e1e; /* Match dark theme */
+  color: #e0e0e0; /* Light text color for dark theme */
   width: 320px; /* Adjust as needed */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* Add a shadow for better visibility */
 }
 
+.video-grid-item h4 {
+  margin: 0 0 8px 0;
+}
+
+.video-grid-item video {
+  width: 100%;
+  height: auto;
+}

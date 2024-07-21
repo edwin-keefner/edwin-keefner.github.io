@@ -6,6 +6,7 @@ const HostPage = () => {
   const [pages, setPages] = useState({});
   const [videos, setVideos] = useState([]);
 
+  // Load pages from Firestore
   const loadPages = async () => {
     try {
       const pagesSnapshot = await getDocs(collection(firestore, 'pages'));
@@ -19,6 +20,7 @@ const HostPage = () => {
     }
   };
 
+  // Load videos from Firestore
   const loadVideos = async () => {
     try {
       const videosSnapshot = await getDocs(collection(firestore, 'videos'));
@@ -29,6 +31,7 @@ const HostPage = () => {
     }
   };
 
+  // Change the current page in Firestore
   const handlePageChange = async (newPage) => {
     try {
       await setDoc(doc(firestore, 'control', 'state'), { page: newPage });
@@ -37,10 +40,21 @@ const HostPage = () => {
     }
   };
 
+  // Update video page index in Firestore
+  const handleVideoPageChange = async (videoId, newPageIndex) => {
+    try {
+      await setDoc(doc(firestore, 'videos', videoId), { pageIndex: newPageIndex }, { merge: true });
+      loadVideos(); // Reload videos to reflect changes
+    } catch (error) {
+      console.error('Error updating video page index:', error);
+    }
+  };
+
+  // Delete a video from Firestore
   const handleDelete = async (videoId) => {
     try {
       await deleteDoc(doc(firestore, 'videos', videoId));
-      loadVideos();
+      loadVideos(); // Reload videos to reflect deletion
     } catch (error) {
       console.error('Error deleting video:', error);
     }
@@ -57,6 +71,7 @@ const HostPage = () => {
       <button onClick={() => handlePageChange('page1')}>Set Page 1</button>
       <button onClick={() => handlePageChange('page2')}>Set Page 2</button>
       {/* Add more buttons dynamically based on pages */}
+
       <h3>Manage Videos</h3>
       <div className="video-grid">
         {videos.map(video => (
@@ -66,8 +81,16 @@ const HostPage = () => {
               <source src={video.url} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
+            <div>
+              <label>Page Index: </label>
+              <input
+                type="number"
+                min="1"
+                value={video.pageIndex || ''}
+                onChange={(e) => handleVideoPageChange(video.id, e.target.value)}
+              />
+            </div>
             <button onClick={() => handleDelete(video.id)}>Delete</button>
-            <p>Assigned to Page: {video.pageIndex}</p>
           </div>
         ))}
       </div>
