@@ -1,14 +1,13 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { doc, onSnapshot, getDoc, getDocs, collection } from 'firebase/firestore';
-import { firestore } from '../firebase';
-import '../index.css';
+import React, { useState, useEffect } from 'react';
+import { firestore } from '../firebase'; // Adjust the path as needed
+import { collection, doc, getDoc, getDocs, onSnapshot, setDoc } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 
 const ViewerPage = () => {
-  const [page, setPage] = useState('1');
+  const [page, setPage] = useState('1'); // Default to '1'
   const [pageData, setPageData] = useState({ title: '', content: '' });
   const [videos, setVideos] = useState([]);
-  const [videoPlayback, setVideoPlayback] = useState({ videoId: null, isPlaying: false });
-  const videoRef = useRef(null);
+  const [isHost, setIsHost] = useState(false); // Add state for host check
 
   useEffect(() => {
     const unsubscribe = onSnapshot(doc(firestore, 'control', 'state'), (doc) => {
@@ -50,25 +49,30 @@ const ViewerPage = () => {
     fetchVideos();
   }, []);
 
-  useEffect(() => {
-    const unsubscribe = onSnapshot(doc(firestore, 'control', 'videoPlayback'), (doc) => {
-      if (doc.exists()) {
-        setVideoPlayback(doc.data());
-      }
-    });
+  // Check if the current user is the host
+  const checkIfHost = async () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (user) {
+      setIsHost(user.email === 'hybyrn@gmail.com'); // Replace with actual host email
+    }
+  };
 
-    return () => unsubscribe(); // Clean up listener on component unmount
+  useEffect(() => {
+    checkIfHost(); // Check if user is host
   }, []);
 
-  useEffect(() => {
-    if (videoRef.current && videoPlayback.videoId) {
-      const video = videoRef.current;
-      video.src = videos.find(v => v.id === videoPlayback.videoId)?.url || '';
-      video[videoPlayback.isPlaying ? 'play' : 'pause']();
-    }
-  }, [videoPlayback, videos]);
-
   const filteredVideos = videos.filter(video => video.pageIndex === parseInt(page, 10));
+
+  // Handle page change
+  const handlePageChange = async (newPage) => {
+    try {
+      const docRef = doc(firestore, 'control', 'state');
+      await setDoc(docRef, { page: newPage });
+    } catch (error) {
+      console.error('Error changing page:', error);
+    }
+  };
 
   return (
     <div className="viewer-container">
@@ -80,7 +84,7 @@ const ViewerPage = () => {
         {filteredVideos.map(video => (
           <div key={video.id} className="video-item">
             <h4 className="video-title">{video.title}</h4>
-            <video ref={videoRef} className="video-player" controls>
+            <video className="video-player" controls>
               <source src={video.url} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
@@ -88,6 +92,24 @@ const ViewerPage = () => {
           </div>
         ))}
       </div>
+
+      {/* Navigation Buttons */}
+      {isHost && (
+        <div className="navigation-buttons">
+          <button
+            onClick={() => handlePageChange(parseInt(page, 10) - 1)}
+            disabled={parseInt(page, 10) <= 1}
+          >
+            Previous Page
+          </button>
+          <button
+            onClick={() => handlePageChange(parseInt(page, 10) + 1)}
+            disabled={parseInt(page, 10) >= (videos.length || 1)}
+          >
+            Next Page
+          </button>
+        </div>
+      )}
     </div>
   );
 };

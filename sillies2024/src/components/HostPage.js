@@ -1,6 +1,11 @@
+// HostPage.js
+
 import React, { useState, useEffect } from 'react';
-import { doc, setDoc, getDocs, collection, getDoc, deleteDoc } from 'firebase/firestore';
-import { firestore } from '../firebase';
+import { firestore } from '../firebase'; // Adjust the path as needed
+import { collection, doc, setDoc, getDocs, getDoc, deleteDoc } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth'; // Import getAuth to use firebase.auth()
+
+// Your component logic here
 
 const HostPage = () => {
   const [pages, setPages] = useState({});
@@ -10,8 +15,7 @@ const HostPage = () => {
   const [editTitle, setEditTitle] = useState({});
   const [editAuthor, setEditAuthor] = useState({});
   const [editPageIndex, setEditPageIndex] = useState({});
-  const [playingVideoId, setPlayingVideoId] = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isHost, setIsHost] = useState(false); // Add state for host check
 
   // Load pages from Firestore
   const loadPages = async () => {
@@ -39,6 +43,15 @@ const HostPage = () => {
     }
   };
 
+  // Check if the current user is the host
+  const checkIfHost = async () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (user) {
+      setIsHost(user.email === 'hybyrn@gmail.com'); // Replace with actual host email
+    }
+  };
+
   // Change the current page in Firestore
   const handlePageChange = async (newPage) => {
     try {
@@ -55,7 +68,7 @@ const HostPage = () => {
       await setDoc(doc(firestore, 'videos', videoId), updatedFields, { merge: true });
       // Reload videos to reflect changes, except for delete
       if (!updatedFields.deleted) {
-        loadVideos();
+        loadVideos(); 
       }
     } catch (error) {
       console.error('Error updating video metadata:', error);
@@ -95,41 +108,6 @@ const HostPage = () => {
     setEditPageIndex(prev => ({ ...prev, [videoId]: pageIndex }));
   };
 
-  // Change current page by increment or decrement
-  const handleNextPage = () => {
-    if (currentPage < maxPages) {
-      handlePageChange(currentPage + 1);
-    }
-  };
-
-  const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      handlePageChange(currentPage - 1);
-    }
-  };
-
-  // Play video
-  const playVideo = async (videoId) => {
-    try {
-      await setDoc(doc(firestore, 'control', 'videoPlayback'), { videoId, isPlaying: true });
-      setPlayingVideoId(videoId);
-      setIsPlaying(true);
-    } catch (error) {
-      console.error('Error playing video:', error);
-    }
-  };
-
-  // Stop video
-  const stopVideo = async () => {
-    try {
-      await setDoc(doc(firestore, 'control', 'videoPlayback'), { videoId: null, isPlaying: false });
-      setPlayingVideoId(null);
-      setIsPlaying(false);
-    } catch (error) {
-      console.error('Error stopping video:', error);
-    }
-  };
-
   useEffect(() => {
     const fetchCurrentPage = async () => {
       const docSnap = await getDoc(doc(firestore, 'control', 'state'));
@@ -141,14 +119,14 @@ const HostPage = () => {
     loadPages();
     loadVideos();
     fetchCurrentPage();
+    checkIfHost(); // Check if user is host
   }, []);
 
   return (
     <div>
       <h2>Host Page</h2>
       <div>
-        <button onClick={handlePreviousPage} disabled={currentPage === 1}>Previous Page</button>
-        <button onClick={handleNextPage} disabled={currentPage === maxPages}>Next Page</button>
+        {/* Removed Previous and Next Page buttons */}
         <div>Current Page: {currentPage}</div>
       </div>
 
@@ -186,9 +164,9 @@ const HostPage = () => {
               value={editPageIndex[video.id] || video.pageIndex}
               onChange={(e) => handlePageIndexChange(video.id, e.target.value)}
             />
-            <button onClick={() => handleVideoDelete(video.id)}>Delete Video</button>
-            <button onClick={() => playVideo(video.id)}>Play Video</button>
-            <button onClick={stopVideo}>Stop Video</button>
+            <button onClick={() => handleVideoDelete(video.id)}>
+              Delete Video
+            </button>
           </div>
         ))}
       </div>
