@@ -1,12 +1,15 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { signOut, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '../firebase';
 
 const NavBar = ({ user, isHost }) => {
+  const navigate = useNavigate();
+
   const handleSignOut = async () => {
     try {
       await signOut(auth);
+      navigate('/'); // Redirect to home page after sign out
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -27,7 +30,7 @@ const NavBar = ({ user, isHost }) => {
         <Link to="/">Home</Link>
         {user && <Link to="/viewer">Presentation</Link>}
         {user && isHost && <Link to="/host">Host Page</Link>}
-        <Link to="/upload">Upload Video</Link> {/* Add this line */}
+        {user && <Link to="/upload">Upload Videos</Link>}
       </div>
       <div>
         {user ? (

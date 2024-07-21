@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { doc, setDoc, getDocs, collection } from 'firebase/firestore';
+import { doc, setDoc, getDocs, collection, deleteDoc } from 'firebase/firestore';
 import { firestore } from '../firebase';
 
 const HostPage = () => {
@@ -37,12 +37,12 @@ const HostPage = () => {
     }
   };
 
-  const handleVideoPageChange = async (videoId, newPageIndex) => {
+  const handleDelete = async (videoId) => {
     try {
-      await setDoc(doc(firestore, 'videos', videoId), { pageIndex: newPageIndex }, { merge: true });
-      loadVideos(); // Refresh videos after update
+      await deleteDoc(doc(firestore, 'videos', videoId));
+      loadVideos();
     } catch (error) {
-      console.error('Error updating video page index:', error);
+      console.error('Error deleting video:', error);
     }
   };
 
@@ -58,16 +58,16 @@ const HostPage = () => {
       <button onClick={() => handlePageChange('page2')}>Set Page 2</button>
       {/* Add more buttons dynamically based on pages */}
       <h3>Manage Videos</h3>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px', maxHeight: '600px', overflowY: 'scroll' }}>
+      <div className="video-grid">
         {videos.map(video => (
-          <div key={video.id} style={{ border: '1px solid #ccc', padding: '8px', borderRadius: '4px', boxShadow: '0 0 4px rgba(0,0,0,0.1)' }}>
+          <div key={video.id} className="video-grid-item">
             <h4>{video.title}</h4>
-            <video width="300" height="200" controls>
+            <video width="320" height="240" controls>
               <source src={video.url} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
+            <button onClick={() => handleDelete(video.id)}>Delete</button>
             <p>Assigned to Page: {video.pageIndex}</p>
-            <input type="number" min="1" value={video.pageIndex} onChange={(e) => handleVideoPageChange(video.id, e.target.value)} />
           </div>
         ))}
       </div>

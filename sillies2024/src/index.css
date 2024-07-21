@@ -42,3 +42,17 @@ body {
   font-size: 18px;
 }
 
+/* src/index.css */
+.video-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.video-grid-item {
+  border: 1px solid #ddd;
+  padding: 8px;
+  border-radius: 4px;
+  width: 320px; /* Adjust as needed */
+}
+
