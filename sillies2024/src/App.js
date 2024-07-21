@@ -1,9 +1,9 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import HomePage from './components/HomePage';
 import HostPage from './components/HostPage';
 import ViewerPage from './components/ViewerPage';
-import UploadPage from './components/UploadPage'; 
+import UploadPage from './components/UploadPage';
 import UploadSuccessPage from './components/UploadSuccessPage';
 import NavBar from './components/NavBar';
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -19,14 +19,10 @@ const App = () => {
       <NavBar user={user} isHost={isHost} />
       <Routes>
         <Route path="/" element={<HomePage />} />
-        
-        {/* Redirect non-logged-in users to HomePage */}
         <Route path="/host" element={user ? <HostPage isHost={isHost} /> : <Navigate to="/" />} />
         <Route path="/viewer" element={user ? <ViewerPage /> : <Navigate to="/" />} />
         <Route path="/upload" element={user ? <UploadPage /> : <Navigate to="/" />} />
-        <Route path="/upload-success" element={<UploadSuccessPage />} />
-        
-        {/* Redirect all other paths to HomePage */}
+        <Route path="/upload-success" element={user ? <UploadSuccessPage /> : <Navigate to="/" />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
