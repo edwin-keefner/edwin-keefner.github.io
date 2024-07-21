@@ -1,16 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { doc, onSnapshot, getDoc, getDocs, collection } from 'firebase/firestore'; // Added getDocs and collection
+import React, { useEffect, useState, useRef } from 'react';
+import { doc, onSnapshot, getDoc, getDocs, collection } from 'firebase/firestore';
 import { firestore } from '../firebase';
+import '../index.css';
 
 const ViewerPage = () => {
-  const [page, setPage] = useState('page1');
+  const [page, setPage] = useState('1');
   const [pageData, setPageData] = useState({ title: '', content: '' });
   const [videos, setVideos] = useState([]);
+  const [videoPlayback, setVideoPlayback] = useState({ videoId: null, isPlaying: false });
+  const videoRef = useRef(null);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(doc(firestore, 'control', 'state'), (doc) => {
       if (doc.exists()) {
-        setPage(doc.data().page);
+        setPage(doc.data().page.toString()); // Ensure page is a string
       }
     });
 
@@ -47,25 +50,41 @@ const ViewerPage = () => {
     fetchVideos();
   }, []);
 
+  useEffect(() => {
+    const unsubscribe = onSnapshot(doc(firestore, 'control', 'videoPlayback'), (doc) => {
+      if (doc.exists()) {
+        setVideoPlayback(doc.data());
+      }
+    });
+
+    return () => unsubscribe(); // Clean up listener on component unmount
+  }, []);
+
+  useEffect(() => {
+    if (videoRef.current && videoPlayback.videoId) {
+      const video = videoRef.current;
+      video.src = videos.find(v => v.id === videoPlayback.videoId)?.url || '';
+      video[videoPlayback.isPlaying ? 'play' : 'pause']();
+    }
+  }, [videoPlayback, videos]);
+
   const filteredVideos = videos.filter(video => video.pageIndex === parseInt(page, 10));
 
   return (
-    <div>
-      <div>
-        <h2>{pageData.title}</h2>
-        <div>{pageData.content}</div>
+    <div className="viewer-container">
+      <div className="page-info">
+        <h2 className="page-title">{pageData.title}</h2>
+        <div className="page-content">{pageData.content}</div>
       </div>
-      <div className="page-number">
-        Page {page}
-      </div>
-      <div>
+      <div className="video-container">
         {filteredVideos.map(video => (
-          <div key={video.id}>
-            <h4>{video.title}</h4>
-            <video width="320" height="240" controls>
+          <div key={video.id} className="video-item">
+            <h4 className="video-title">{video.title}</h4>
+            <video ref={videoRef} className="video-player" controls>
               <source src={video.url} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
+            <div className="video-author">by {video.author}</div>
           </div>
         ))}
       </div>
